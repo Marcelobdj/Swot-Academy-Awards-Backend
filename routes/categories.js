@@ -29,6 +29,11 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
 
     try {
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
         const updatedCategory = await Category.findByIdAndUpdate(id, req.body, { new: true });
         res.json(updatedCategory);
     } catch (err) {
@@ -41,6 +46,11 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params;
 
     try {
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
         const deletedCategory = await Category.findByIdAndDelete(id);
         res.json(deletedCategory);
     } catch (err) {

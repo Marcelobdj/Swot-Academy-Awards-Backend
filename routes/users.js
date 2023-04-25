@@ -24,5 +24,38 @@ router.post("/", async (req, res) => {
     }
 });
 
+// Update a user
+router.put("/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+        res.json(updatedUser);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// Delete a user
+router.delete("/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const deletedUser = await User.findByIdAndDelete(id);
+        res.json(deletedUser);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
 
 module.exports = router;
