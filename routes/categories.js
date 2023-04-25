@@ -74,6 +74,26 @@ router.put("/setCurrent/:id", async (req, res) => {
     }
 });
 
+// Add a vote
+router.post("/:id/vote", async (req, res) => {
+    const { id } = req.params;
+    const vote = req.body;
+
+    try {
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
+        category.votes.push(vote);
+        await category.save();
+
+        res.status(201).json({ message: "Vote added successfully" });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 // Get voting results for a category
 router.get("/:id/results", async (req, res) => {
     try {
