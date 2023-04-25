@@ -58,4 +58,48 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
+// Set the current voting category
+router.put("/setCurrent/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Set all categories to not open
+        await Category.updateMany({}, { isOpen: false });
+
+        // Set the selected category to open
+        const updatedCategory = await Category.findByIdAndUpdate(id, { isOpen: true }, { new: true });
+        res.json(updatedCategory);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// Get voting results for a category
+router.get("/:id/results", async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
+        // Calculate the voting results
+        const voteCount = {};
+        category.votes.forEach(vote => {
+            if (voteCount[vote.character]) {
+                voteCount[vote.character]++;
+            } else {
+                voteCount[vote.character] = 1;
+            }
+        });
+
+        const results = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
+        const winner = results[0];
+
+        // Return the winner and their vote count
+        res.json({ winner: winner[0], voteCount: winner[1] });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
