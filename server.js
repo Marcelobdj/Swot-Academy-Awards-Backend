@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const categoriesRouter = require("./routes/categories");
+const usersRouter = require("./routes/users"); // Add this line
 
 dotenv.config();
 
@@ -27,6 +29,12 @@ const connectToMongoDB = async () => {
 
 connectToMongoDB();
 
+// Use the categories router with the '/api' prefix
+app.use("/api/categories", categoriesRouter);
+
+// Use the users router with the '/api' prefix
+app.use("/api/users", usersRouter); // Add this line
+
 // Routes
 app.get("/", (req, res) => {
     res.send("Swot Academy Awards API");
@@ -34,7 +42,7 @@ app.get("/", (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 7000;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
