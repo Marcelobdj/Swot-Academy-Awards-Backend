@@ -13,15 +13,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
 const connectToMongoDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
-
-        mongoose.set('useFindAndModify', false);
 
         console.log("Connected to MongoDB");
     } catch (err) {
