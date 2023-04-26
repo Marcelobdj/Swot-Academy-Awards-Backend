@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const categoriesRouter = require("./routes/categories");
-const usersRouter = require("./routes/users"); // Add this line
+const usersRouter = require("./routes/users");
 
 dotenv.config();
 
@@ -19,6 +19,7 @@ const connectToMongoDB = async () => {
         await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            useFindAndModify: false, // Add this line
         });
         console.log("Connected to MongoDB");
     } catch (err) {
@@ -33,7 +34,7 @@ connectToMongoDB();
 app.use("/api/categories", categoriesRouter);
 
 // Use the users router with the '/api' prefix
-app.use("/api/users", usersRouter); // Add this line
+app.use("/api/users", usersRouter);
 
 // Routes
 app.get("/", (req, res) => {
