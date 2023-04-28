@@ -76,49 +76,69 @@ router.put("/setCurrent/:id", async (req, res) => {
 
 // Add a vote
 router.post("/:id/vote", async (req, res) => {
-    const { id } = req.params;
-    const vote = req.body;
-
     try {
-        const category = await Category.findById(id);
+        const { username, character, comment } = req.body;
+
+        const category = await Category.findById(req.params.id);
         if (!category) {
-            return res.status(404).json({ message: "Category not found" });
+            return res.status(404).send({ error: "Category not found" });
         }
 
-        category.votes.push(vote);
+        // Check if the user has already voted in this category
+        const existingVote = category.votes.find((vote) => vote.user === username);
+        if (existingVote) {
+            return res.status(400).send({ error: "User has already voted in this category" });
+        }
+
+        category.votes.push({ character, user: username, comment });
         await category.save();
 
-        res.status(201).json({ message: "Vote added successfully" });
+        res.status(201).send({ message: "Vote added successfully" });
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        console.error(err);
+        res.status(500).send({ error: "An error occurred while submitting your vote" });
     }
 });
 
 // Get voting results for a category
-router.get("/:id/results", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id);
-        if (!category) {
-            return res.status(404).json({ message: "Category not found" });
-        }
+        const categories = await Category.find();
 
-        // Calculate the voting results
-        const voteCount = {};
-        category.votes.forEach(vote => {
-            if (voteCount[vote.character]) {
-                voteCount[vote.character]++;
-            } else {
-                voteCount[vote.character] = 1;
+        // Compute winners and vote count for each category
+        const categoriesWithWinners = categories.map((category) => {
+            // Calculate the winner and vote count based on your current logic
+            const voteCountMap = {};
+
+            category.votes.forEach((vote) => {
+                if (!voteCountMap[vote.character]) {
+                    voteCountMap[vote.character] = 1;
+                } else {
+                    voteCountMap[vote.character]++;
+                }
+            });
+
+            let winnerCharacter = null;
+            let winnerVoteCount = 0;
+
+            for (const [character, count] of Object.entries(voteCountMap)) {
+                if (count > winnerVoteCount) {
+                    winnerCharacter = character;
+                    winnerVoteCount = count;
+                }
             }
+
+            return {
+                ...category.toObject(),
+                winner: winnerCharacter,
+                voteCount: winnerVoteCount,
+            };
         });
 
-        const results = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
-        const winner = results[0];
-
-        // Return the winner and their vote count
-        res.json({ winner: winner[0], voteCount: winner[1] });
+        res.status(200).send(categoriesWithWinners);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error(err);
+        res.status(500).send({ error: "An error occurred while fetching categories" });
     }
 });
 
